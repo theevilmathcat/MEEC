@@ -50,4 +50,4 @@ Kernel Density Estimation is a non-parametric method for estimating a probabilit
 - **Well-chosen** (`h = 0.30`): the estimate tracks the true bimodal shape closely and ISE falls steadily with more data, approaching the optimal `O(1/n)` rate.
 - **Too large** (`h = 1.50`): the estimate is over-smoothed — the two modes merge into one broad bump. ISE is dominated by bias and also stops improving with larger samples.
 
-The ISE convergence plot makes this concrete: only the correctly-sized bandwidth achieves a decay rate close to `1/n` on the log-log scale. The labels in the script are in Portuguese (`h = 0.30 (adequado)` = "appropriate"), reflecting its original educational context.
+The ISE convergence plot makes this concrete: only the correctly-sized bandwidth achieves a decay rate close to `1/n` on the log-log scale. The labels in the script are in Portuguese (`h = 0.30 (adequado)` = "appropriate").
