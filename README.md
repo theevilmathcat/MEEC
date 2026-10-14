@@ -17,5 +17,4 @@ This repo is a work in progress and will be updated as the courses progress. Exp
 
 ## Contact
 
-I don't like you, unless you wanna buy me food then it's ok. You can contact me at: diogolmferreira@gmail.com
-EOF
+I don't like you, 😾 unless you wanna buy me food ☕ then it's ok. You can contact me at: diogolmferreira@gmail.com
