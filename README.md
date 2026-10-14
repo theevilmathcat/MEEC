@@ -17,8 +17,8 @@ Este é um trabalho em progresso. Vou actualizando à medida que me apetecer e f
 
 ## Contacto
 
-Não gosto de pessoas nem de ti 😾. A não ser que me queiras dar dinheiro, comida ou café ☕, então está ok. 
+Não gosto de pessoas nem de ti 😾.  A não ser que me queiras dar dinheiro, comida ou café ☕, então está ok. 
 
-Podes contactar-me por email. 
+Podes contactar-me por email. Talvez ou talvez não te responda.
 
-Talvez ou talvez não te responda: diogolmferreira@gmail.com
+diogolmferreira@gmail.com
