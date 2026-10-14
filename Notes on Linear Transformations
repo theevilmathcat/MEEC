@@ -1,6 +1,6 @@
 # Linear Transformations
 
-> Before vomiting number crunching, let's understand what this is actually about.
+> Before vomting number crunching, let's understand what this is actually about.
 
 A **linear transformation** `T` is a function that takes vectors from a space **V** and maps them to another space **W**, respecting two rules:
 
