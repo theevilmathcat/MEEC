@@ -1,20 +1,20 @@
 cat > README.md << 'EOF'
 # MEEC
 
-Supporting material for the MEEC.
+Material de Suporte para o MEEC: Mestrado em Estatística Computacional
 
-## What's in here
+## O que está aqui
 
-- `ano 1/` — coursework and notes by semester
+- `ano 1/` — material de cada curso e apontamentos por semestre
   - `semestre 1/` — Tópicos de Análise, Amostragem, Análise e Tratamento de Dados, Computação Estatística, Estatística I
   - `semestre 2/` — Análise de Dados Multivariados e Aplicações, Computação Estatística II, Estatística II, Métodos Numéricos
-- `ano 2/tese/` — thesis work
-- `apontamentos/` — general notes that don't fit anywhere specific
+- `ano 2/tese/` — tese
+- `apontamentos/` — apontamentos que não vão para nenhum curso em específico, mas que são relevantes para mim.
 
 ## Status
 
-This repo is a work in progress and will be updated as the courses progress. Expect things to move around.
+Este é um trabalho em progresso. Vou actualizando à medida que me apetecer e for progredindo.
 
-## Contact
+## Contacto
 
-I don't like you, 😾 unless you wanna buy me food ☕ then it's ok. You can contact me at: diogolmferreira@gmail.com
+Não gosto de pessoas nem de ti 😾. A não ser que me queiras dar dinheiro, comida ou café ☕, entáo está ok. Podes contactar-me por email talvez ou talvez não te responda: diogolmferreira@gmail.com
