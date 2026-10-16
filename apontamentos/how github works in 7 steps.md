@@ -47,5 +47,5 @@
 
 Regra para guardar seja o que fôr de ficheiros: branch = ramo separado; main = tronco. 
 
-Não se mexe no tronco directamente quando estás a contribuir para algo que não é teu ou que queres verificar primeiasdasdrmeiro
+Não se mexe no tronco directamente quando estás a contribuir para algo que não é teu ou que queres verificar primeiro.
 
