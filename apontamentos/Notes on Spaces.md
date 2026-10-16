@@ -4,6 +4,33 @@ A running collection of my notes on mathematical spaces.
 
 ---
 
+## What is a Space?
+
+A space is a set of things, plus some rules about how those things relate to each other. That's the whole idea.
+
+## Breaking it down
+
+**The set** = the "stuff" in the space.
+
+- Numbers, points, functions, vectors, whatever.
+
+**The rules** = extra structure you add on top.
+
+- How far apart are two things? → distance rule (metric)
+- What does "near" mean? → openness rule (topology)
+- How long is a thing? → length rule (norm)
+- What's the angle between two things? → angle rule (inner product)
+
+## Analogy
+
+Think of a **chessboard**.
+
+- The **set** = all 64 squares.
+- Add the rule "a knight moves in an L" → now you have a space with knight-move structure.
+- Add "a rook moves in straight lines" → different structure on the same set.
+
+Same set, different rules → different spaces.
+
 ## How Many Spaces Are There?
 
 There's no fixed number — "space" is a general term for a set with some added structure. Mathematicians define as many kinds as are useful, and new ones get invented as needed. Below are the most common ones, roughly from least to most structure.
