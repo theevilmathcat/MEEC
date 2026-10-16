@@ -54,11 +54,17 @@ There's no fixed number — "space" is a general term for a set with some added 
 
 ## Quick Hierarchy
 Topological space
+
 └── Metric space
+
 └── Normed vector space
+
 └── Banach space (complete)
+
 └── Inner product space
+
 └── Hilbert space (complete)
+
 
 
 *(Note: inner product spaces don't strictly sit "under" Banach spaces — an inner product induces a norm, so every inner product space is normed, and a complete one is both Banach and Hilbert.)*
