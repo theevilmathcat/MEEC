@@ -43,7 +43,7 @@
 |---|---|---|
 | Criar branch | directamente| `git checkout -b nome` |
 | Commit | "Commit changes" | `git commit -m "..."` |
-| PR | directamente | abres no website à mão |
+| PR | directamente | abres no website |
 
 Regra para guardar seja o que fôr de ficheiros: branch = ramo separado; main = tronco. 
 
