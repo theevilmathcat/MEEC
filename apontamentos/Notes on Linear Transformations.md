@@ -1,4 +1,4 @@
-# Linear Transformations v1
+# Linear Transformations
 
 > Before start engaging in number crunching vomiting, let's first understand what this is all about.
 
