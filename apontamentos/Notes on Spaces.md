@@ -2,7 +2,7 @@
 
 A running collection of my notes on mathematical spaces.
 
----
+----
 
 ## What is a Space?
 
