@@ -41,9 +41,9 @@
 
 | | Website | Terminal |
 |---|---|---|
-| Criar branch | clicas na caixa | `git checkout -b nome` |
+| Criar branch | directamente| `git checkout -b nome` |
 | Commit | "Commit changes" | `git commit -m "..."` |
-| PR | clique automático | abres no website à mão |
+| PR | directamente | abres no website à mão |
 
 Regra para guardar seja o que fôr de ficheiros: branch = ramo separado; main = tronco. 
 
