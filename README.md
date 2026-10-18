@@ -1,5 +1,5 @@
 cat > README.md << 'EOF'
-# MEEC
+# MEEC |
 
 Material de Suporte para o MEEC: Mestrado em Estatística Computacional na UAB.
 
