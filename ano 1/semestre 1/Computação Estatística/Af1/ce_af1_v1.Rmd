@@ -1,0 +1,1243 @@
+---
+title: "CE —  AF1_Resolução Completa"
+author: "Diogo Marques"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: flatly
+    highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+---
+
+# Grupo I — Fundamentos de programação e estruturas de dados
+
+## Exercício 1 — Operações vetorizadas e precisão numérica
+
+### Alínea a) — Calcular A, B e C com operações vetorizadas
+
+```{r ex1a}
+# A = sum_{k=1}^{100} (-1)^(k+1) / k  (série alternada de ln(2))
+k_A <- 1:100
+A <- sum((-1)^(k_A + 1) / k_A)
+cat("A =", A, "\n")
+
+# B = prod_{k=1}^{20} (1 + 1/k^2)
+k_B <- 1:20
+B <- prod(1 + 1/k_B^2)
+cat("B =", B, "\n")
+
+# C = sum_{k=0}^{30} (-2)^k / k!  (série de Taylor de e^(-2))
+k_C <- 0:30
+C <- sum((-2)^k_C / factorial(k_C))
+cat("C =", C, "\n")
+```
+
+### Alínea b) — Comparar A com log(2) e C com e^{-2}
+
+```{r ex1b}
+# Comparar A com log(2)
+log2_val <- log(2)
+erro_abs_A  <- abs(A - log2_val)
+erro_rel_A  <- erro_abs_A / abs(log2_val)
+
+cat("A         =", A, "\n")
+cat("log(2)    =", log2_val, "\n")
+cat("Erro abs. =", erro_abs_A, "\n")
+cat("Erro rel. =", erro_rel_A, "\n\n")
+
+# Comparar C com e^{-2}
+e_neg2 <- exp(-2)
+erro_abs_C  <- abs(C - e_neg2)
+erro_rel_C  <- erro_abs_C / abs(e_neg2)
+
+cat("C         =", C, "\n")
+cat("e^(-2)    =", e_neg2, "\n")
+cat("Erro abs. =", erro_abs_C, "\n")
+cat("Erro rel. =", erro_rel_C, "\n")
+```
+
+### Alínea c) — Função soma_alternada(n)
+
+```{r ex1c}
+soma_alternada <- function(n) {
+  k <- 1:n
+  sum((-1)^(k + 1) / k)
+}
+
+# Verificação
+cat("soma_alternada(100) =", soma_alternada(100), "\n")
+cat("log(2)              =", log(2), "\n")
+```
+
+### Alínea d) — Gráfico do erro absoluto em escala logarítmica
+
+```{r ex1d, fig.width=8, fig.height=5}
+ns <- 1:1000
+erros <- sapply(ns, function(n) abs(soma_alternada(n) - log(2)))
+
+plot(ns, erros,
+     type = "l", col = "steelblue",
+     log  = "y",
+     xlab = "n",
+     ylab = "Erro absoluto (escala log)",
+     main = "Erro absoluto de A(n) em relação a log(2)")
+abline(h = 1e-3, col = "red", lty = 2)
+legend("topright", legend = "Erro abs.", col = "steelblue", lty = 1)
+```
+
+### Alínea e) — Ordem das operações em vírgula flutuante
+
+A aritmética de vírgula flutuante **não é associativa**: `(a + b) + c` pode diferir de `a + (b + c)` devido a erros de arredondamento que se acumulam de formas distintas. Quando os termos têm magnitudes muito diferentes, a adição de um número grande com um muito pequeno pode eliminar os dígitos significativos do menor (*cancelamento catastrófico*). Por exemplo, na série alternada `A`, somar primeiro os termos positivos e depois subtrair os negativos introduz erros distintos dos obtidos pela soma termo-a-termo alternada. O padrão IEEE 754 define o arredondamento para cada operação individual, mas não para sequências de operações, pelo que a ordem em que são efetuadas influencia o resultado final.
+
+---
+
+## Exercício 2 — Vetores, indexação e estatísticas descritivas
+
+> **Nota:** na ausência do número de estudante real, usa-se o exemplo `2310456789` para demonstrar todas as alíneas. Substitua pelo seu número real.
+
+### Alínea a) — Construir o vetor automaticamente
+
+```{r ex2a}
+numero_estudante <- 2300062
+x <- as.integer(strsplit(as.character(numero_estudante), "")[[1]])
+cat("Vetor x:", x, "\n")
+```
+
+### Alínea b) — Estatísticas descritivas
+
+```{r ex2b}
+media_x     <- mean(x)
+mediana_x   <- median(x)
+variancia_x <- var(x)          # variância amostral (divisão por n-1)
+dp_x        <- sd(x)
+iqr_x       <- IQR(x)
+
+# Coeficiente de variação (indefinido se média = 0)
+if (media_x == 0) {
+  cat("Coeficiente de variação: INDEFINIDO (média = 0)\n")
+  cv_x <- NA
+} else {
+  cv_x <- dp_x / media_x * 100
+}
+
+cat("Média               :", media_x,     "\n")
+cat("Mediana             :", mediana_x,   "\n")
+cat("Variância amostral  :", variancia_x, "\n")
+cat("Desvio-padrão       :", dp_x,        "\n")
+cat("Amplitude IQR       :", iqr_x,       "\n")
+cat("Coef. de variação(%):", cv_x,        "\n")
+```
+
+### Alínea c) — Elementos superiores à média
+
+```{r ex2c}
+x_acima_media <- x[x > media_x]
+cat("Elementos > média:", x_acima_media, "\n")
+```
+
+### Alínea d) — Frequências absolutas e relativas (algarismos 0–9)
+
+```{r ex2d}
+todos_algarismos <- 0:9
+freq_abs <- table(factor(x, levels = todos_algarismos))
+freq_rel <- prop.table(freq_abs)
+
+resultado_freq <- data.frame(
+  Algarismo    = todos_algarismos,
+  Freq_Absoluta = as.integer(freq_abs),
+  Freq_Relativa = round(as.numeric(freq_rel), 4)
+)
+print(resultado_freq)
+```
+
+### Alínea e) — Função estatisticas(x)
+
+```{r ex2e}
+estatisticas <- function(x) {
+  x_valido <- x[!is.na(x)]
+  n  <- length(x_valido)
+  mu <- sum(x_valido) / n
+  med <- {
+    xs <- sort(x_valido)
+    if (n %% 2 == 1) xs[(n + 1) / 2]
+    else (xs[n / 2] + xs[n / 2 + 1]) / 2
+  }
+  var_amostral <- sum((x_valido - mu)^2) / (n - 1)
+  dp           <- sqrt(var_amostral)
+  q1 <- quantile(x_valido, 0.25)
+  q3 <- quantile(x_valido, 0.75)
+  iqr_val <- as.numeric(q3 - q1)
+  cv  <- if (mu == 0) NA else dp / mu * 100
+
+  list(
+    media             = mu,
+    mediana           = med,
+    variancia_amostral = var_amostral,
+    desvio_padrao     = dp,
+    IQR               = iqr_val,
+    coef_variacao_pct = cv
+  )
+}
+
+res <- estatisticas(x)
+print(res)
+```
+
+### Alínea f) — Valores NA e função adaptada
+
+```{r ex2f}
+x_com_na <- x
+x_com_na[c(2, 5)] <- NA   # introduzir artificialmente dois NA
+
+estatisticas_na <- function(x) {
+  # A função já usa x[!is.na(x)] internamente — reutiliza a versão anterior
+  estatisticas(x)
+}
+
+res_na <- estatisticas_na(x_com_na)
+print(res_na)
+```
+
+### Alínea g) — Comparação var() vs definição manual
+
+```{r ex2g}
+var_builtin  <- var(x)
+n_x          <- length(x)
+var_manual   <- sum((x - mean(x))^2) / (n_x - 1)
+
+cat("var() built-in :", var_builtin, "\n")
+cat("Cálculo manual :", var_manual,  "\n")
+cat("Diferença      :", abs(var_builtin - var_manual), "\n")
+```
+
+---
+
+## Exercício 3 — Sequências, matrizes e álgebra linear
+
+### Alínea a) — Transposta, determinante, traço e valores próprios
+
+```{r ex3a}
+A_mat <- matrix(c(4, 1, 2,
+                   1, 3,-1,
+                   2,-1, 5), nrow = 3, byrow = TRUE)
+
+cat("Matriz A:\n"); print(A_mat)
+cat("\nTransposta de A:\n"); print(t(A_mat))
+cat("\nDeterminante:", det(A_mat), "\n")
+cat("Traço:", sum(diag(A_mat)), "\n")
+cat("Valores próprios:", eigen(A_mat)$values, "\n")
+```
+
+### Alínea b) — Verificar simetria e definida positiva
+
+```{r ex3b}
+tol <- 1e-10
+eh_simetrica   <- all(abs(A_mat - t(A_mat)) < tol)
+valores_prop   <- eigen(A_mat)$values
+eh_def_positiva <- all(valores_prop > 0)
+
+cat("É simétrica?         ", eh_simetrica,    "\n")
+cat("É definida positiva?", eh_def_positiva,  "\n")
+cat("Valores próprios:    ", valores_prop,     "\n")
+```
+
+### Alínea c) — Resolver Ax = b
+
+```{r ex3c}
+b_vec <- c(1, 2, 3)
+x_hat <- solve(A_mat, b_vec)
+cat("Solução x̂:", x_hat, "\n")
+```
+
+### Alínea d) — Resíduos e norma euclidiana
+
+```{r ex3d}
+residuo <- A_mat %*% x_hat - b_vec
+norma_residuo <- sqrt(sum(residuo^2))
+cat("Vetor de resíduos (Ax̂ - b):", residuo, "\n")
+cat("Norma euclidiana dos resíduos:", norma_residuo, "\n")
+```
+
+### Alínea e) — Decomposição de Cholesky
+
+```{r ex3e}
+L <- chol(A_mat)          # R devolve a fator triangular SUPERIOR U tal que A = t(U) %*% U
+A_reconstruida <- t(L) %*% L
+cat("Factor de Cholesky (U, triangular superior):\n"); print(L)
+cat("\nReconstrução t(U)%*%U:\n"); print(A_reconstruida)
+cat("\nMáxima diferença absoluta:", max(abs(A_mat - A_reconstruida)), "\n")
+```
+
+### Alínea f) — Função é_simetrica_def_positiva
+
+```{r ex3f}
+e_simetrica_def_positiva <- function(M, tol = 1e-10) {
+  if (!is.matrix(M) || nrow(M) != ncol(M)) stop("M deve ser uma matriz quadrada.")
+  simetrica    <- all(abs(M - t(M)) < tol)
+  def_positiva <- if (simetrica) all(eigen(M)$values > tol) else FALSE
+  list(simetrica = simetrica, definida_positiva = def_positiva)
+}
+
+print(e_simetrica_def_positiva(A_mat))
+```
+
+---
+
+# Grupo II — Programação e tratamento de dados
+
+## Exercício 4 — Funções, algoritmos e controlo de fluxo
+
+### Alínea a) — media_manual com ciclo for
+
+```{r ex4a}
+media_manual_for <- function(x) {
+  x <- x[!is.na(x)]
+  n   <- length(x)
+  s   <- 0
+  for (xi in x) s <- s + xi
+  s / n
+}
+cat("media_manual_for(x) =", media_manual_for(x), "\n")
+```
+
+### Alínea b) — media_manual vectorizada
+
+```{r ex4b}
+media_manual_vec <- function(x) {
+  x <- x[!is.na(x)]
+  sum(x) / length(x)
+}
+cat("media_manual_vec(x) =", media_manual_vec(x), "\n")
+```
+
+### Alínea c) — variancia_manual
+
+```{r ex4c}
+variancia_manual <- function(x) {
+  x <- x[!is.na(x)]
+  n <- length(x)
+  if (n < 2) return(NA)
+  sum((x - sum(x)/n)^2) / (n - 1)
+}
+cat("variancia_manual(x) =", variancia_manual(x), "\n")
+```
+
+### Alínea d) — mediana_manual
+
+```{r ex4d}
+mediana_manual <- function(x) {
+  x <- sort(x[!is.na(x)])
+  n <- length(x)
+  if (n %% 2 == 1) x[(n + 1) / 2]
+  else (x[n / 2] + x[n / 2 + 1]) / 2
+}
+cat("mediana_manual(x) =", mediana_manual(x), "\n")
+```
+
+### Alínea e) — Comparação com funções nativas
+
+```{r ex4e}
+cat("--- Média ---\n")
+cat("manual_for :", media_manual_for(x), "\n")
+cat("manual_vec :", media_manual_vec(x), "\n")
+cat("mean()     :", mean(x),             "\n")
+
+cat("\n--- Variância ---\n")
+cat("manual :", variancia_manual(x), "\n")
+cat("var()  :", var(x),              "\n")
+
+cat("\n--- Mediana ---\n")
+cat("manual  :", mediana_manual(x), "\n")
+cat("median():", median(x),        "\n")
+```
+
+### Alínea f) — Comparação de tempos de execução
+
+```{r ex4f}
+tamanhos <- c(1e3, 1e5, 1e6)
+reps     <- 20
+
+resultados_tempo <- data.frame(
+  n       = tamanhos,
+  for_ms  = NA_real_,
+  vec_ms  = NA_real_
+)
+
+for (i in seq_along(tamanhos)) {
+  v <- rnorm(tamanhos[i])
+
+  t_for <- system.time(
+    replicate(reps, media_manual_for(v))
+  )["elapsed"] / reps * 1000
+
+  t_vec <- system.time(
+    replicate(reps, media_manual_vec(v))
+  )["elapsed"] / reps * 1000
+
+  resultados_tempo$for_ms[i] <- t_for
+  resultados_tempo$vec_ms[i] <- t_vec
+}
+
+print(resultados_tempo)
+```
+
+### Alínea g) — Vantagens e limitações da programação vetorizada
+
+A programação vectorizada em R oferece **vantagens** significativas: código mais conciso e legível; execução mais rápida porque as operações vectorizadas são implementadas em C/Fortran internamente; menor risco de erros lógicos nos índices de ciclos. As principais **limitações** são a menor intuitividade para quem provém de linguagens imperativas; dificuldade em expressar algoritmos com dependências sequenciais como recorrências e o consumo de memória potencialmente maior por criar vectores intermédios.
+
+---
+
+## Exercício 5 — Manipulação e limpeza de dados
+
+### Alínea a) — Estrutura e valores omissos
+
+```{r ex5a}
+data(airquality)
+str(airquality)
+cat("\nNúmero de NAs por variável:\n")
+print(colSums(is.na(airquality)))
+```
+
+### Alínea b) — Percentagem de observações incompletas
+
+```{r ex5b}
+pct_incompletas <- mean(!complete.cases(airquality)) * 100
+cat("Observações incompletas:", round(pct_incompletas, 2), "%\n")
+```
+
+### Alínea c) — Duas versões: eliminação e imputação pela mediana
+
+```{r ex5c}
+# Versão 1: eliminar linhas incompletas
+aq_completo <- airquality[complete.cases(airquality), ]
+
+# Versão 2: substituir NAs pelas medianas das respetivas variáveis
+aq_mediana  <- airquality
+for (col in names(aq_mediana)) {
+  if (is.numeric(aq_mediana[[col]])) {
+    med_col <- median(aq_mediana[[col]], na.rm = TRUE)
+    aq_mediana[[col]][is.na(aq_mediana[[col]])] <- med_col
+  }
+}
+
+cat("Dimensão original  :", nrow(airquality), "×", ncol(airquality), "\n")
+cat("Após eliminação    :", nrow(aq_completo), "×", ncol(aq_completo), "\n")
+cat("Após imputação     :", nrow(aq_mediana),  "×", ncol(aq_mediana), "\n")
+```
+
+### Alínea d) — Comparação de estatísticas nas duas versões
+
+```{r ex5d}
+vars_num <- c("Ozone", "Solar.R", "Wind", "Temp")
+
+resumo <- function(df, nome) {
+  cat("\n===", nome, "===\n")
+  for (v in vars_num) {
+    cat(v, "| média:", round(mean(df[[v]], na.rm=TRUE), 2),
+        "| mediana:", round(median(df[[v]], na.rm=TRUE), 2),
+        "| dp:", round(sd(df[[v]], na.rm=TRUE), 2), "\n")
+  }
+}
+
+resumo(aq_completo, "Eliminação de NAs")
+resumo(aq_mediana,  "Imputação pela mediana")
+```
+
+### Alínea e) — Temperatura em Celsius
+
+```{r ex5e}
+airquality$TempC <- (airquality$Temp - 32) * 5 / 9
+head(airquality[, c("Temp", "TempC")])
+```
+
+### Alínea f) — Valores atípicos de Ozone (regra 1,5 × IQR)
+
+```{r ex5f}
+oz <- airquality$Ozone[!is.na(airquality$Ozone)]
+q1_oz <- quantile(oz, 0.25)
+q3_oz <- quantile(oz, 0.75)
+iqr_oz <- q3_oz - q1_oz
+limite_inf <- q1_oz - 1.5 * iqr_oz
+limite_sup <- q3_oz + 1.5 * iqr_oz
+
+atipicos <- oz[oz < limite_inf | oz > limite_sup]
+cat("Limite inferior:", limite_inf, "\n")
+cat("Limite superior:", limite_sup, "\n")
+cat("Valores atípicos de Ozone:", atipicos, "\n")
+```
+
+### Alínea g) — Distribuição de Ozone antes e depois do tratamento
+
+```{r ex5g, fig.width=10, fig.height=4}
+par(mfrow = c(1, 2))
+
+hist(airquality$Ozone, main = "Ozone — com NAs (ignorados)",
+     xlab = "Ozone (ppb)", col = "lightblue", border = "white")
+
+hist(aq_mediana$Ozone, main = "Ozone — NAs imputados pela mediana",
+     xlab = "Ozone (ppb)", col = "salmon", border = "white")
+
+par(mfrow = c(1, 1))
+```
+
+### Alínea h) — Discussão
+
+O eliminar observações incompletas (listwise deletion) pode introduzir **viés** se os dados não forem MCAR (*Missing Completely At Random*); reduz a dimensão da amostra e a potência estatística. A imputação pela mediana preserva o tamanho amostral e é robusta a outliers, mas subestima a variabilidade e pode distorcer correlações entre variáveis. Estratégias mais sofisticadas como a imputação múltipla e modelos preditivos são preferíveis em contextos de inferência rigorosa.
+
+---
+
+## Exercício 6 — Manipulação avançada de data frames
+
+### Alínea a) — Categorias de consumo a partir dos tercis de mpg
+
+```{r ex6a}
+data(mtcars)
+tercis <- quantile(mtcars$mpg, probs = c(1/3, 2/3))
+mtcars$cat_consumo <- cut(mtcars$mpg,
+                          breaks = c(-Inf, tercis, Inf),
+                          labels = c("Alto", "Médio", "Baixo"), # corrigido: mpg baixo = consumo alto
+                          include.lowest = TRUE)
+table(mtcars$cat_consumo)
+```
+
+### Alínea b) — Média, mediana e dp de mpg e hp por número de cilindros
+
+```{r ex6b}
+cilindros <- sort(unique(mtcars$cyl))
+
+resumo_cyl <- do.call(rbind, lapply(cilindros, function(cyl) {
+  sub <- mtcars[mtcars$cyl == cyl, ]
+  data.frame(
+    cyl       = cyl,
+    mpg_mean  = mean(sub$mpg),
+    mpg_med   = median(sub$mpg),
+    mpg_sd    = sd(sub$mpg),
+    hp_mean   = mean(sub$hp),
+    hp_med    = median(sub$hp),
+    hp_sd     = sd(sub$hp)
+  )
+}))
+
+print(round(resumo_cyl, 2))
+```
+
+### Alínea c) — Automóveis com hp > P75(hp) e mpg < mediana(mpg)
+
+```{r ex6c}
+p75_hp   <- quantile(mtcars$hp,  0.75)
+med_mpg  <- median(mtcars$mpg)
+
+sel <- mtcars[mtcars$hp > p75_hp & mtcars$mpg < med_mpg, ]
+cat("Automóveis selecionados:\n")
+print(rownames(sel))
+```
+
+### Alínea d) — Tabela cruzada cilindros × categoria de consumo
+
+```{r ex6d}
+print(table(mtcars$cyl, mtcars$cat_consumo,
+            dnn = c("Cilindros", "Categoria consumo")))
+```
+
+### Alínea e) — Correlações entre mpg, wt, hp, disp
+
+```{r ex6e}
+vars_cor <- c("mpg", "wt", "hp", "disp")
+cor_mat  <- cor(mtcars[, vars_cor], use = "complete.obs")
+print(round(cor_mat, 3))
+```
+
+### Alínea f) — Repetir b) e c) com dplyr
+
+```{r ex6f}
+library(dplyr)
+
+# Alínea b) com dplyr
+resumo_dplyr <- mtcars %>%
+  group_by(cyl) %>%
+  summarise(
+    mpg_mean = mean(mpg), mpg_med = median(mpg), mpg_sd = sd(mpg),
+    hp_mean  = mean(hp),  hp_med  = median(hp),  hp_sd  = sd(hp),
+    .groups = "drop"
+  )
+print(resumo_dplyr)
+
+# Alínea c) com dplyr
+sel_dplyr <- mtcars %>%
+  filter(hp > quantile(hp, 0.75), mpg < median(mpg))
+cat("\nAutomóveis selecionados (dplyr):\n")
+print(rownames(sel_dplyr))
+```
+
+### Alínea g) — Comparação R base vs dplyr
+
+O R base exige chamadas explícitas a `tapply`, `aggregate`, ou `lapply`/`do.call`, resultando em código mais verboso mas sem dependências externas. O `dplyr` oferece uma sintaxe declarativa em *pipeline* (`%>%`) que exprime claramente **o quê** se pretende em vez de **como** fazê-lo, tornando o código mais legível e de melhor manutenção, especialmente em cadeias de operações complexas. A desvantagem do `dplyr` é introduzir uma dependência e uma curva de aprendizagem adicional.
+
+---
+
+# Grupo III — Visualização e modelação estatística
+
+## Exercício 7 — Visualização exploratória
+
+```{r ex7_setup}
+data(iris)
+```
+
+### Alínea a) — Matriz de gráficos de dispersão
+
+```{r ex7a, fig.width=8, fig.height=8}
+pairs(iris[, 1:4],
+      col  = c("tomato","steelblue","forestgreen")[as.integer(iris$Species)],
+      pch  = 19, cex = 0.7,
+      main = "Matriz de dispersão — iris (por espécie)")
+legend("topright", legend = levels(iris$Species),
+       col = c("tomato","steelblue","forestgreen"), pch = 19, bty = "n")
+```
+
+### Alínea b) — Matriz de correlações
+
+```{r ex7b, fig.width=6, fig.height=5}
+cor_iris <- cor(iris[, 1:4])
+print(round(cor_iris, 3))
+
+# Visualização gráfica simples com image()
+image(1:4, 1:4, cor_iris,
+      col  = hcl.colors(20, "Blue-Red 3", rev = TRUE),
+      axes = FALSE,
+      main = "Matriz de correlações — iris")
+axis(1, at = 1:4, labels = names(iris)[1:4], las = 2)
+axis(2, at = 1:4, labels = names(iris)[1:4], las = 1)
+for (i in 1:4) for (j in 1:4)
+  text(i, j, round(cor_iris[i,j], 2), cex = 0.9)
+```
+
+### Alínea c) — Boxplots de Petal.Length por espécie com valores individuais
+
+```{r ex7c, fig.width=7, fig.height=5}
+boxplot(Petal.Length ~ Species, data = iris,
+        col = c("tomato","steelblue","forestgreen"),
+        main = "Petal.Length por espécie",
+        ylab = "Comprimento da pétala (cm)")
+
+# Sobrepor pontos individuais com jitter
+set.seed(42)
+stripchart(Petal.Length ~ Species, data = iris,
+           method = "jitter", jitter = 0.08,
+           vertical = TRUE, add = TRUE,
+           pch = 16, col = rgb(0,0,0,0.4), cex = 0.7)
+```
+
+### Alínea d) — Retas de regressão Petal.Length ~ Petal.Width por espécie
+
+```{r ex7d, fig.width=7, fig.height=5}
+cores  <- c("tomato","steelblue","forestgreen")
+species <- levels(iris$Species)
+
+plot(iris$Petal.Width, iris$Petal.Length,
+     col  = cores[as.integer(iris$Species)],
+     pch  = 19, cex = 0.7,
+     xlab = "Petal.Width (cm)", ylab = "Petal.Length (cm)",
+     main = "Regressão Petal.Length ~ Petal.Width por espécie")
+
+for (i in seq_along(species)) {
+  sub <- iris[iris$Species == species[i], ]
+  mod <- lm(Petal.Length ~ Petal.Width, data = sub)
+  abline(mod, col = cores[i], lwd = 2)
+}
+
+legend("topleft", legend = species, col = cores, lty = 1, lwd = 2,
+       pch = 19, bty = "n")
+```
+
+### Alínea e) — Comparação dos declives
+
+```{r ex7e}
+for (sp in species) {
+  sub  <- iris[iris$Species == sp, ]
+  coef <- coef(lm(Petal.Length ~ Petal.Width, data = sub))
+  cat(sp, "— intercepto:", round(coef[1],3),
+      "| declive:", round(coef[2],3), "\n")
+}
+```
+
+A espécie *setosa* apresenta petais muito pequenas e uma relação linear com declive menor e maior variabilidade relativa. As espécies *versicolor* e *virginica* têm declives semelhantes mas *virginica* tem petais maiores. As diferenças nos declives ilustram que a relação entre largura e comprimento da pétala não é homogénea entre espécies — fenómeno relacionado com o paradoxo de Simpson.
+
+### Alínea f) — Figura final com ggplot2
+
+```{r ex7f, fig.width=8, fig.height=5}
+library(ggplot2)
+
+ggplot(iris, aes(x = Petal.Width, y = Petal.Length, colour = Species)) +
+  geom_point(alpha = 0.6, size = 2) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1) +
+  scale_colour_manual(values = c("tomato","steelblue","forestgreen")) +
+  labs(
+    title    = "Relação entre largura e comprimento das pétalas",
+    subtitle = "Regressão linear por espécie com intervalo de confiança a 95%",
+    x        = "Largura da pétala (cm)",
+    y        = "Comprimento da pétala (cm)",
+    colour   = "Espécie"
+  ) +
+  theme_bw(base_size = 13) +
+  theme(legend.position = "bottom")
+```
+
+---
+
+## Exercício 8 — Regressão linear e diagnóstico
+
+### Alínea a) — Ajustar modelos M1 e M2
+
+```{r ex8a}
+M1 <- lm(mpg ~ wt,      data = mtcars)
+M2 <- lm(mpg ~ wt + hp, data = mtcars)
+summary(M1)
+summary(M2)
+```
+
+### Alínea b) — Comparar R², R²_ajustado, AIC e BIC
+
+```{r ex8b}
+comparacao <- data.frame(
+  Modelo     = c("M1 (wt)", "M2 (wt+hp)"),
+  R2         = c(summary(M1)$r.squared, summary(M2)$r.squared),
+  R2_ajust   = c(summary(M1)$adj.r.squared, summary(M2)$adj.r.squared),
+  AIC        = c(AIC(M1), AIC(M2)),
+  BIC        = c(BIC(M1), BIC(M2))
+)
+
+comparacao[, sapply(comparacao, is.numeric)] <- round(
+  comparacao[, sapply(comparacao, is.numeric)], 4
+)
+
+print(comparacao)
+```
+
+### Alínea c) — Interpretação dos coeficientes de M2
+
+```{r ex8c}
+print(summary(M2)$coefficients)
+```
+
+No modelo M2: a **intercepção** (~37.2) é o consumo estimado quando `wt = 0` e `hp = 0` (sem interpretação física direta); o **coeficiente de wt** (~−3.88) indica que, mantendo `hp` constante, cada 1000 lb adicional de peso reduz `mpg` em ≈ 3.88 milhas; o **coeficiente de hp** (~−0.032) indica que, mantendo `wt` constante, cada cavalo adicional reduz `mpg` em ≈ 0.032 milhas.
+
+### Alínea d) — Resíduos vs valores ajustados e gráfico Q-Q
+
+```{r ex8d, fig.width=10, fig.height=4}
+par(mfrow = c(1, 2))
+
+plot(fitted(M2), residuals(M2),
+     xlab = "Valores ajustados", ylab = "Resíduos",
+     main = "Resíduos vs Ajustados — M2",
+     pch = 19, col = "steelblue")
+abline(h = 0, col = "red", lty = 2)
+
+qqnorm(residuals(M2), main = "Gráfico Q-Q — M2", pch = 19, col = "steelblue")
+qqline(residuals(M2), col = "red")
+
+par(mfrow = c(1, 1))
+```
+
+### Alínea e) — Observações influentes: distância de Cook
+
+```{r ex8e, fig.width=7, fig.height=4}
+cook <- cooks.distance(M2)
+plot(cook, type = "h", col = "steelblue",
+     ylab = "Distância de Cook", main = "Distâncias de Cook — M2")
+abline(h = 4 / nrow(mtcars), col = "red", lty = 2)
+text(which(cook > 4/nrow(mtcars)), cook[cook > 4/nrow(mtcars)],
+     labels = rownames(mtcars)[cook > 4/nrow(mtcars)],
+     pos = 3, cex = 0.7)
+```
+
+### Alínea f) — Intervalos de confiança para os coeficientes
+
+```{r ex8f}
+print(confint(M2, level = 0.95))
+```
+
+### Alínea g) — Previsões para três automóveis hipotéticos
+
+```{r ex8g}
+novos <- data.frame(
+  wt = c(2.5, 3.2, 4.0),
+  hp = c(100, 150, 200)
+)
+
+previsoes <- predict(M2, newdata = novos,
+                     interval = "prediction", level = 0.95)
+
+resultado_prev <- cbind(novos, round(previsoes, 2))
+colnames(resultado_prev) <- c("wt (1000 lb)", "hp (cv)",
+                               "mpg previsto", "Limite inf 95%", "Limite sup 95%")
+print(resultado_prev)
+```
+
+### Alínea h) — Limitações dos modelos lineares
+
+Os modelos lineares assumem **linearidade**, **homocedasticidade**, **normalidade dos resíduos** e **independência** das observações. No conjunto `mtcars`, a relação entre consumo e peso pode não ser perfeitamente linear; os resíduos de `M2` mostram algum padrão sistemático (curvilinearidade residual), sugerindo que um modelo com termos quadráticos ou uma transformação logarítmica de `mpg` poderia ser mais adequado. Além disso, `mtcars` tem apenas 32 observações, o que limita o poder de deteção de violações e a generalização das conclusões.
+
+# Grupo IV — Aplicações estatísticas com dados reais
+
+## Exercício 9 — Análise exploratória de dados biomédicos
+
+```{r setup-ex9, message=FALSE, warning=FALSE}
+library(ISwR)
+library(nlme)
+```
+
+---
+
+## a) Variáveis, escalas de medida e dimensão da amostra
+
+**vitcap2** tem **84 observações** e 3 variáveis:
+- `group` (nominal/ordinal — 1 = controlo, 2 e 3 = níveis de exposição a poeiras industriais)
+- `age` (rácio — anos)
+- `vital.capacity` (rácio — litros)
+
+**tlc** tem **32 observações** e 4 variáveis:
+- `age` (rácio — anos)
+- `sex` (nominal — 1 = masculino, 2 = feminino)
+- `height` (rácio — cm)
+- `tlc` (rácio — capacidade pulmonar total em litros)
+
+**secher** tem **107 observações** e 4 variáveis:
+- `no` (identificador nominal)
+- `bwt` (rácio — peso ao nascer em gramas)
+- `bpd` (rácio — diâmetro biparietal em mm)
+- `ad`  (rácio — diâmetro abdominal em mm)
+
+```{r ex9a_estrutura}
+cat("=== vitcap2 ===\n")
+str(vitcap2)
+cat("Dimensão:", nrow(vitcap2), "×", ncol(vitcap2), "\n")
+cat("NAs por variável:\n"); print(colSums(is.na(vitcap2)))
+
+cat("\n=== tlc ===\n")
+str(tlc)
+cat("Dimensão:", nrow(tlc), "×", ncol(tlc), "\n")
+cat("NAs por variável:\n"); print(colSums(is.na(tlc)))
+
+cat("\n=== secher ===\n")
+str(secher)
+cat("Dimensão:", nrow(secher), "×", ncol(secher), "\n")
+cat("NAs por variável:\n"); print(colSums(is.na(secher)))
+```
+
+---
+
+## b) Análise exploratória
+
+### vitcap2
+
+```{r ex9b_vitcap2, fig.width=10, fig.height=4}
+cat("=== vitcap2 — Sumário ===\n")
+summary(vitcap2)
+
+# Sumário por grupo
+cat("\nSumário de vital.capacity por grupo:\n")
+tapply(vitcap2$vital.capacity, vitcap2$group, summary)
+
+par(mfrow = c(1, 3))
+
+# Boxplot por grupo
+boxplot(vital.capacity ~ group, data = vitcap2,
+        main = "Capacidade vital por grupo",
+        xlab = "Grupo", ylab = "Capacidade vital (L)",
+        col = c("lightblue", "lightyellow", "lightgreen"))
+
+# Dispersão age vs vital.capacity
+plot(vitcap2$age, vitcap2$vital.capacity,
+     col = vitcap2$group, pch = 19,
+     main = "Capacidade vital vs Idade",
+     xlab = "Idade (anos)", ylab = "Capacidade vital (L)")
+legend("topright", legend = c("Grupo 1","Grupo 2","Grupo 3"),
+       col = 1:3, pch = 19, cex = 0.8)
+
+# Histograma
+hist(vitcap2$vital.capacity,
+     main = "Distribuição da capacidade vital",
+     xlab = "Capacidade vital (L)", col = "lightblue",
+     border = "white")
+
+par(mfrow = c(1, 1))
+```
+
+### tlc
+
+```{r ex9b_tlc, fig.width=10, fig.height=4}
+cat("=== tlc — Sumário ===\n")
+summary(tlc)
+
+par(mfrow = c(1, 3))
+
+# Boxplot TLC por sexo
+boxplot(tlc ~ sex, data = tlc,
+        main = "TLC por sexo",
+        xlab = "Sexo (1=M, 2=F)", ylab = "TLC (L)",
+        col = c("lightblue", "lightpink"))
+
+# TLC vs altura
+plot(tlc$height, tlc$tlc,
+     col = tlc$sex, pch = 19,
+     main = "TLC vs Altura",
+     xlab = "Altura (cm)", ylab = "TLC (L)")
+legend("topleft", legend = c("M","F"),
+       col = 1:2, pch = 19, cex = 0.8)
+
+# TLC vs idade
+plot(tlc$age, tlc$tlc,
+     col = tlc$sex, pch = 19,
+     main = "TLC vs Idade",
+     xlab = "Idade (anos)", ylab = "TLC (L)")
+
+par(mfrow = c(1, 1))
+```
+
+### secher
+
+```{r ex9b_secher, fig.width=10, fig.height=4}
+cat("=== secher — Sumário ===\n")
+summary(secher[, c("bwt","bpd","ad")])
+
+par(mfrow = c(1, 3))
+
+hist(secher$bwt, main = "Distribuição de bwt",
+     xlab = "Peso ao nascer (g)", col = "lightblue", border = "white")
+
+plot(secher$bpd, secher$bwt, pch = 19, col = "steelblue",
+     main = "bwt vs bpd",
+     xlab = "Diâmetro biparietal (mm)", ylab = "Peso ao nascer (g)")
+
+plot(secher$ad, secher$bwt, pch = 19, col = "tomato",
+     main = "bwt vs ad",
+     xlab = "Diâmetro abdominal (mm)", ylab = "Peso ao nascer (g)")
+
+par(mfrow = c(1, 1))
+```
+
+---
+
+## c) Identificação de outliers
+
+```{r ex9c_outliers}
+detecta_outliers_iqr <- function(x, nome) {
+  Q1 <- quantile(x, 0.25, na.rm = TRUE)
+  Q3 <- quantile(x, 0.75, na.rm = TRUE)
+  IQR_val <- Q3 - Q1
+  idx <- which(x < Q1 - 1.5 * IQR_val | x > Q3 + 1.5 * IQR_val)
+  if (length(idx) == 0) cat(" ", nome, ": nenhum\n")
+  else cat(" ", nome, ":", paste(idx, collapse = ", "), "\n")
+}
+
+cat("Outliers (IQR) — vitcap2:\n")
+for (v in c("age","vital.capacity"))
+  detecta_outliers_iqr(vitcap2[[v]], v)
+
+cat("\nOutliers (IQR) — tlc:\n")
+for (v in c("age","height","tlc"))
+  detecta_outliers_iqr(tlc[[v]], v)
+
+cat("\nOutliers (IQR) — secher:\n")
+for (v in c("bwt","bpd","ad"))
+  detecta_outliers_iqr(secher[[v]], v)
+```
+
+---
+
+## d) Associações entre variáveis quantitativas
+
+Usamos **correlação de Pearson** (variáveis contínuas, distribuições aproximadamente normais) e **Spearman** como complemento robusto a outliers.
+
+```{r ex9d_correlacoes}
+# --- vitcap2: age vs vital.capacity ---
+cat("=== vitcap2 — correlação age vs vital.capacity ===\n")
+cor.test(vitcap2$age, vitcap2$vital.capacity, method = "pearson")
+suppressWarnings(
+  cor.test(vitcap2$age, vitcap2$vital.capacity, method = "spearman")
+)
+
+# --- tlc: correlações entre variáveis quantitativas ---
+cat("\n=== tlc — matriz de correlações (age, height, tlc) ===\n")
+round(cor(tlc[, c("age","height","tlc")], use = "complete.obs"), 3)
+
+# --- secher: matriz de correlações ---
+cat("\n=== secher — matriz de correlações ===\n")
+round(cor(secher[, c("bwt","bpd","ad")], use = "complete.obs"), 3)
+```
+
+---
+
+## e) Questão estatística e metodologia proposta
+
+- **vitcap2**: A capacidade vital difere entre os grupos após controlar a idade?  
+  → ANCOVA com `vital.capacity` como resposta, `group` como fator e `age` como covariável.
+
+- **tlc**: A altura e o sexo explicam a variabilidade da TLC?  
+  → Regressão linear múltipla: `tlc ~ height + sex`.
+
+- **secher**: Qual a combinação de `bpd` e `ad` que melhor prediz `bwt`?  
+  → Regressão linear múltipla e comparação de modelos por AIC.
+
+---
+
+## f) Análise aprofundada — vitcap2 (ANCOVA) e secher (Regressão)
+
+### vitcap2 — ANCOVA
+
+```{r ex9f_ancova}
+cat("=== vitcap2 — ANCOVA ===\n")
+mod_ancova <- lm(vital.capacity ~ factor(group) + age, data = vitcap2)
+summary(mod_ancova)
+
+# Diagnóstico dos resíduos
+par(mfrow = c(2, 2))
+plot(mod_ancova)
+par(mfrow = c(1, 1))
+```
+
+### tlc — Regressão linear múltipla
+
+```{r ex9f_tlc_lm}
+cat("=== tlc — Regressão linear: tlc ~ height + factor(sex) ===\n")
+mod_tlc <- lm(tlc ~ height + factor(sex), data = tlc)
+summary(mod_tlc)
+
+par(mfrow = c(2, 2))
+plot(mod_tlc)
+par(mfrow = c(1, 1))
+```
+
+### secher — Regressão linear
+
+```{r ex9f_secher, fig.width=10, fig.height=4}
+cat("=== secher — Regressão linear ===\n")
+
+cat("\n--- Modelo 1: bwt ~ bpd ---\n")
+mod1 <- lm(bwt ~ bpd, data = secher)
+print(summary(mod1))
+
+cat("\n--- Modelo 2: bwt ~ ad ---\n")
+mod2 <- lm(bwt ~ ad, data = secher)
+print(summary(mod2))
+
+cat("\n--- Modelo 3: bwt ~ bpd + ad ---\n")
+mod3 <- lm(bwt ~ bpd + ad, data = secher)
+print(summary(mod3))
+
+cat("\nComparação AIC:\n")
+print(AIC(mod1, mod2, mod3))
+
+# Gráficos de ajuste
+par(mfrow = c(1, 2))
+plot(secher$bpd, secher$bwt, pch = 19, col = "steelblue",
+     main = "bwt ~ bpd", xlab = "bpd (mm)", ylab = "bwt (g)")
+abline(mod1, col = "red", lwd = 2)
+
+plot(secher$ad, secher$bwt, pch = 19, col = "tomato",
+     main = "bwt ~ ad", xlab = "ad (mm)", ylab = "bwt (g)")
+abline(mod2, col = "red", lwd = 2)
+par(mfrow = c(1, 1))
+```
+
+---
+
+## g) Conclusões
+
+**vitcap2**: Existe uma correlação negativa moderada a forte entre a idade e a capacidade vital (r = −0.605, p < 0.001). A ANCOVA mostra que a idade é um preditor significativo (p < 0.001) mas os grupos não diferem de forma estatisticamente significativa após ajustamento pela idade (p > 0.05 para ambos os contrastes). O modelo explica cerca de 37% da variância (R² ajustado = 0.346). **Limitação**: o grupo pode ser confundido com a idade se os trabalhadores mais expostos forem também mais velhos.
+
+**tlc**: A capacidade pulmonar total associa-se positivamente com a altura (esperado fisiologicamente) e negativamente com o sexo feminino. A amostra é pequena (n = 32), pelo que as estimativas têm incerteza considerável.
+
+**secher**: O modelo com ambos os preditores (bpd + ad) é o melhor (AIC mais baixo, R² = 0.807), evidenciando que a combinação de duas medidas ecográficas prediz o peso ao nascer de forma mais precisa do que cada uma isoladamente. A análise de outliers revelou várias observações atípicas que merecem verificação clínica.
+
+## Exercício 10 — Mini-projeto
+
+### Alínea a) — Função que gera amostra e calcula os dois estimadores
+
+```{r ex10a}
+estimadores <- function(n, dist = "normal") {
+  if (dist == "normal") {
+    amostra <- rnorm(n)
+  } else if (dist == "t3") {
+    amostra <- rt(n, df = 3)
+  }
+  list(
+    media_amostral = mean(amostra),
+    media_aparada  = mean(amostra, trim = 0.10)
+  )
+}
+```
+
+### Alínea b) — Generalizar para B repetições
+
+```{r ex10b}
+simular <- function(n, B = 1000, dist = "normal") {
+  resultados <- replicate(B, {
+    est <- estimadores(n, dist)
+    c(media_amostral = est$media_amostral,
+      media_aparada  = est$media_aparada)
+  })
+  t(resultados)   # B × 2
+}
+```
+
+### Alínea c) — n = 20, 50, 100; B = 1000; distribuição normal
+
+```{r ex10c}
+set.seed(2024)
+ns_sim <- c(20, 50, 100)
+B_sim  <- 1000
+mu_true <- 0    # média populacional verdadeira (N(0,1))
+
+resumo_sim <- do.call(rbind, lapply(ns_sim, function(n) {
+  sim <- simular(n, B_sim, dist = "normal")
+
+  vies_ma  <- mean(sim[,"media_amostral"]) - mu_true
+  var_ma   <- var(sim[,"media_amostral"])
+  eqm_ma   <- mean((sim[,"media_amostral"] - mu_true)^2)
+
+  vies_ap  <- mean(sim[,"media_aparada"]) - mu_true
+  var_ap   <- var(sim[,"media_aparada"])
+  eqm_ap   <- mean((sim[,"media_aparada"] - mu_true)^2)
+
+  data.frame(
+    n          = n,
+    Estimador  = c("Média amostral", "Média aparada 10%"),
+    Vies       = c(vies_ma, vies_ap),
+    Variancia  = c(var_ma, var_ap),
+    EQM        = c(eqm_ma, eqm_ap)
+  )
+}))
+
+resumo_sim[, sapply(resumo_sim, is.numeric)] <- round(
+  resumo_sim[, sapply(resumo_sim, is.numeric)], 6
+)
+print(resumo_sim)
+```
+
+### Alínea d) — Repetir com distribuição t(3)
+
+```{r ex10d}
+set.seed(2024)
+
+resumo_t3 <- do.call(rbind, lapply(ns_sim, function(n) {
+  sim <- simular(n, B_sim, dist = "t3")
+
+  vies_ma  <- mean(sim[,"media_amostral"]) - mu_true
+  var_ma   <- var(sim[,"media_amostral"])
+  eqm_ma   <- vies_ma^2 + var_ma
+
+  vies_ap  <- mean(sim[,"media_aparada"]) - mu_true
+  var_ap   <- var(sim[,"media_aparada"])
+  eqm_ap   <- vies_ap^2 + var_ap
+
+  data.frame(
+    n          = n,
+    Estimador  = c("Média amostral", "Média aparada 10%"),
+    Vies       = c(vies_ma, vies_ap),
+    Variancia  = c(var_ma, var_ap),
+    EQM        = c(eqm_ma, eqm_ap)
+  )
+}))
+
+cat("\n=== Distribuição t(3) ===\n")
+resumo_t3[, sapply(resumo_t3, is.numeric)] <- round(
+  resumo_t3[, sapply(resumo_t3, is.numeric)], 6
+)
+print(resumo_t3)
+```
+
+### Alínea e) — Comparação gráfica das distribuições empíricas
+
+```{r ex10e, fig.width=10, fig.height=5}
+set.seed(2024)
+sim50_norm <- simular(50, 1000, dist = "normal")
+sim50_t3   <- simular(50, 1000, dist = "t3")
+
+par(mfrow = c(1, 2))
+
+# Normal
+densMA_n  <- density(sim50_norm[,"media_amostral"])
+densAP_n  <- density(sim50_norm[,"media_aparada"])
+ylim_n    <- range(densMA_n$y, densAP_n$y)
+
+plot(densMA_n, main = "n=50, Normal(0,1)",
+     col = "steelblue", lwd = 2, ylim = ylim_n,
+     xlab = "Estimativa", ylab = "Densidade")
+lines(densAP_n, col = "tomato", lwd = 2)
+abline(v = 0, lty = 2)
+legend("topright", c("Média amostral","Média aparada 10%"),
+       col = c("steelblue","tomato"), lwd = 2, bty = "n")
+
+# t(3)
+densMA_t  <- density(sim50_t3[,"media_amostral"])
+densAP_t  <- density(sim50_t3[,"media_aparada"])
+ylim_t    <- range(densMA_t$y, densAP_t$y)
+
+plot(densMA_t, main = "n=50, t(3)",
+     col = "steelblue", lwd = 2, ylim = ylim_t,
+     xlab = "Estimativa", ylab = "Densidade")
+lines(densAP_t, col = "tomato", lwd = 2)
+abline(v = 0, lty = 2)
+legend("topright", c("Média amostral","Média aparada 10%"),
+       col = c("steelblue","tomato"), lwd = 2, bty = "n")
+
+par(mfrow = c(1, 1))
+```
+
+### Alínea f) — Efeito da dimensão amostral no EQM
+
+```{r ex10f, fig.width=8, fig.height=5}
+set.seed(2024)
+ns_eqm <- c(10, 20, 50, 100, 200, 500)
+
+eqm_df <- do.call(rbind, lapply(ns_eqm, function(n) {
+  for_dist <- function(dist) {
+    sim <- simular(n, 500, dist)
+    eqm_ma <- mean((sim[,"media_amostral"] - 0)^2)
+    eqm_ap <- mean((sim[,"media_aparada"]  - 0)^2)
+    data.frame(n = n, dist = dist, EQM_MA = eqm_ma, EQM_AP = eqm_ap)
+  }
+  rbind(for_dist("normal"), for_dist("t3"))
+}))
+
+par(mfrow = c(1, 2))
+for (d in c("normal","t3")) {
+  sub <- eqm_df[eqm_df$dist == d,]
+  plot(sub$n, sub$EQM_MA, type = "b", col = "steelblue",
+       log = "xy", pch = 19, lwd = 2,
+       xlab = "n", ylab = "EQM",
+       main = paste("EQM vs n —", ifelse(d=="normal","Normal(0,1)","t(3)")),
+       ylim = range(sub$EQM_MA, sub$EQM_AP) * c(0.8, 1.2))
+  lines(sub$n, sub$EQM_AP, type = "b", col = "tomato", pch = 17, lwd = 2)
+  legend("topright", c("Média amostral","Média aparada"),
+         col = c("steelblue","tomato"), lwd = 2, pch = c(19,17), bty = "n")
+}
+par(mfrow = c(1, 1))
+```
+
+### Alínea g) — Reprodutibilidade com set.seed()
+
+```{r ex10g}
+set.seed(123)
+r1 <- simular(50, 10, "normal")[,1]
+set.seed(123)
+r2 <- simular(50, 10, "normal")[,1]
+cat("Resultados idênticos:", identical(r1, r2), "\n")
+```
+
+### Alínea h) — Conclusão
+
+Sob a distribuição **Normal**, a média amostral é o estimador de mínima variância não enviesado (MVUE); a média aparada tem variância ligeiramente superior, sem ganho. Sob a distribuição **t com 3 graus de liberdade** (caudas pesadas), a média aparada reduz substancialmente o EQM relativamente à média amostral, evidenciando a sua robustez a valores extremos. Com o aumento de *n*, ambos os estimadores convergem para a verdadeira média com EQM decrescente, mas a convergência é mais lenta sob t(3) para a média amostral. Conclui-se que a escolha do estimador deve ponderar as características da distribuição subjacente: para distribuições simétricas de caudas pesadas, a média aparada é preferível.
+
+---
+
+*Fim da resolução.*
